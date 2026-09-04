@@ -1,6 +1,8 @@
 # tintronix-lab.github.io
 
-This repo exists for one file.
+This repo exists for one file — plus an `index.html` that redirects the domain
+root to the docs site at `/ThreadMapper/`, because without it the root is a 404
+and the App Clip's invocation URL lands there for anyone who cannot run the Clip.
 
 GitHub Pages decides who serves `https://tintronix-lab.github.io/` **by repo
 name**: only a repo named exactly `<user>.github.io` gets the domain root.
