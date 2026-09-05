@@ -1,4 +1,22 @@
 {
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["QCSX955Y7P.com.tintronixlab.ThreadMapper"],
+        "components": [
+          {
+            "/": "/ThreadMapper/*",
+            "exclude": true,
+            "comment": "The documentation site is served from this same host under /ThreadMapper/. Those links must open a web page, so they are excluded before the root is claimed below."
+          },
+          {
+            "/": "/",
+            "comment": "The App Clip invocation URL. Once the full app is installed, iOS opens it here instead of launching the Clip again."
+          }
+        ]
+      }
+    ]
+  },
   "appclips": {
     "apps": ["QCSX955Y7P.com.tintronixlab.ThreadMapper.Clip"]
   }
