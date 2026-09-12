@@ -1,0 +1,576 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ThreadMapper</title>
+<!-- A customer's inspection travels in this page's own URL, so it must never
+     be indexed and must never leak as a referrer to the App Store link. -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#0B1020">
+<!-- Generated from site/handoff/ by tools/build_handoff_page.py — edit the
+     template, handoff.js, render.js and site/strings/handoff.*.json, not this
+     file. Published to the repo that serves the domain root; `/h` is the path
+     HandoffCodec writes onto every sticker. -->
+<style>
+  /* The site's own tokens (site/index.html.tmpl), so a customer who came from
+     a sticker and a customer who came from the website are looking at one
+     product. Grade tones are the app's A–F colours, darkened on paper until
+     each clears 4.5:1 on its own tint. */
+  :root {
+    color-scheme: light dark;
+    --ink: #0B1020; --paper: #FBFAFD; --surface: #F3F1F9; --line: #E2DEEE;
+    --body: #3A3A46; --muted: #5C5C6E; --signal: #1D5DBF; --noise: #4A2C9C;
+    --shadow: 0 1px 2px rgba(11,16,32,.05), 0 8px 24px -12px rgba(11,16,32,.18);
+    --a: #17683F; --b: #0F6E62; --c: #7A5600; --d: #9B4400; --f: #B3261E;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
+            "Hiragino Sans", "Yu Gothic", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #F2F1F7; --paper: #08090F; --surface: #14141F; --line: #262636;
+      --body: #B9B9C6; --muted: #85859A; --signal: #6FB2FF; --noise: #9878DE;
+      --shadow: none;
+      --a: #5FD39B; --b: #4FD2C0; --c: #E9C46A; --d: #F2A25C; --f: #FF8E84;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--paper); color: var(--ink);
+    font: 16.5px/1.6 var(--sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  #h {
+    max-width: 30rem; margin: 0 auto; padding: 1.5rem 1.25rem 3rem;
+    display: flex; flex-direction: column; gap: 1rem;
+  }
+  a { color: var(--signal); }
+  a:focus-visible { outline: 2px solid var(--signal); outline-offset: 3px; border-radius: 4px; }
+
+  /* The wordmark is the only chrome, and it is a way back to the product for
+     a reader who has never heard of it. */
+  .brand {
+    font: 600 .78rem/1 var(--mono); letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); text-decoration: none; align-self: center; padding: .25rem;
+  }
+  .brand:hover { color: var(--signal); }
+
+  /* ── Verification ─────────────────────────────────────────────────────── */
+  .check {
+    display: flex; gap: .7rem; align-items: flex-start;
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: .85rem .9rem;
+  }
+  .check-mark {
+    font: 700 1rem/1.3 var(--mono); flex: none; width: 1.4rem; height: 1.4rem;
+    display: grid; place-items: center; border-radius: 50%; color: var(--paper);
+  }
+  .check-ok .check-mark { background: var(--a); }
+  .check-warn .check-mark { background: var(--d); }
+  .check-text { display: flex; flex-direction: column; gap: .15rem; }
+  .check-text strong { font-size: .95rem; }
+  .check-detail { font-size: .8rem; color: var(--muted); }
+
+  /* ── Grade ────────────────────────────────────────────────────────────── */
+  .grade {
+    display: flex; flex-direction: column; align-items: center; gap: .3rem;
+    border-radius: 16px; padding: 1.4rem 1.1rem; text-align: center;
+    background: color-mix(in srgb, var(--tone) 12%, var(--paper));
+    border: 1px solid color-mix(in srgb, var(--tone) 28%, var(--line));
+  }
+  .grade-a { --tone: var(--a); } .grade-b { --tone: var(--b); }
+  .grade-c { --tone: var(--c); } .grade-d { --tone: var(--d); }
+  .grade-f { --tone: var(--f); }
+  .grade-site { font-size: 1rem; font-weight: 600; margin: 0 0 .2rem; overflow-wrap: anywhere; }
+  .grade-letter { font: 700 3.4rem/1 var(--mono); color: var(--tone); }
+  .grade-score { font: .95rem/1 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .grade-summary { margin: .45rem 0 0; font-size: .95rem; overflow-wrap: anywhere; }
+  .grade-when, .grade-firm { margin: .2rem 0 0; font-size: .78rem; color: var(--muted); overflow-wrap: anywhere; }
+  .grade-firm { font-weight: 600; }
+  .grade-accept { margin: .55rem 0 0; font-size: .78rem; font-weight: 700; }
+  .grade-accept.is-yes { color: var(--a); }
+  .grade-accept.is-no { color: var(--f); }
+
+  /* ── Counts ───────────────────────────────────────────────────────────── */
+  .tiles { display: flex; gap: .55rem; }
+  .tile {
+    flex: 1; background: var(--surface); border: 1px solid var(--line);
+    border-radius: 10px; padding: .7rem .4rem; text-align: center;
+  }
+  .tile-value { font: .8rem/1.3 var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+  .tile-bad .tile-value { color: var(--f); }
+
+  /* ── Panels ───────────────────────────────────────────────────────────── */
+  .panel {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: 12px; padding: .95rem 1rem;
+  }
+  .panel h2 { margin: 0 0 .6rem; font-size: .95rem; }
+  .issues, .rooms { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .issues li { font-size: .88rem; padding-left: 1.3rem; position: relative; overflow-wrap: anywhere; }
+  .issues li::before { content: "!"; position: absolute; left: 0; top: 0; font: 700 .8rem/1.5 var(--mono); color: var(--d); }
+  .rooms li { display: flex; align-items: baseline; gap: .6rem; font-size: .88rem; }
+  .room-name { flex: 1; overflow-wrap: anywhere; }
+  .room-counts { display: flex; gap: .5rem; flex: none; font: .76rem/1.4 var(--mono); font-variant-numeric: tabular-nums; }
+  .room-devices { color: var(--muted); }
+  .room-bad { color: var(--f); font-weight: 700; }
+  .room-warn { color: var(--d); font-weight: 700; }
+
+  /* ── Notice, call to action, footer ───────────────────────────────────── */
+  .notice {
+    display: flex; flex-direction: column; align-items: center; text-align: center; gap: .4rem;
+    border: 1px solid var(--line); border-radius: 16px; padding: 2.2rem 1.2rem; background: var(--surface);
+  }
+  .notice-mark { width: 2rem; height: 2rem; color: var(--muted); }
+  .notice-title { margin: .3rem 0 0; font-size: 1.05rem; }
+  .notice-body { margin: 0; font-size: .88rem; color: var(--muted); max-width: 22rem; }
+  .notice .cta { margin-top: 1rem; }
+  .cta {
+    display: block; text-align: center; text-decoration: none;
+    background: var(--signal); color: #fff; font-weight: 600; font-size: .95rem;
+    padding: .8rem 1rem; border-radius: 11px; box-shadow: var(--shadow);
+  }
+  @media (prefers-color-scheme: dark) { .cta { color: #04070E; } }
+  .footer { margin: .4rem 0 0; font-size: .76rem; color: var(--muted); text-align: center; }
+  noscript .footer { color: var(--body); }
+</style>
+</head>
+<body>
+<main id="h">
+  <a class="brand" href="https://tintronix-lab.github.io/ThreadMapper/" rel="noreferrer noopener">ThreadMapper</a>
+  <noscript>
+    <p class="footer">This page reads the report out of the link in your browser, which needs JavaScript. On an iPhone, the same link opens ThreadMapper itself.</p>
+    <a class="cta" href="https://apps.apple.com/app/id6794255629" rel="noreferrer noopener">ThreadMapper on the App Store</a>
+  </noscript>
+</main>
+<script>
+const LANGS = ["en", "sv", "de", "fr", "es", "it", "ja", "nl", "pt-BR"];
+const SITE_PATHS = {"de": "de", "en": "", "es": "es", "fr": "fr", "it": "it", "ja": "ja", "nl": "nl", "pt-BR": "pt-br", "sv": "sv"};
+const APP_STORE = "https://apps.apple.com/app/id6794255629";
+const STRINGS = {"de": {"accepted": "Bei der Übergabe abgenommen", "cta": "Vollständige App laden", "devices": {"one": "%lld Gerät", "other": "%lld Geräte"}, "fail.body": "Der Aufkleber ist möglicherweise beschädigt, oder der Link wurde unterwegs gekürzt. Bitten Sie die Person, die das Netzwerk eingerichtet hat, um einen neuen.", "fail.title": "Dieser Code konnte nicht gelesen werden", "footer": "Alles auf dieser Seite stammt aus dem Link selbst. Nichts wurde aus Ihrem Netzwerk ausgelesen, und die Seite lädt nichts nach.", "inspected": "Geprüft am %@", "issues.title": "Was gefunden wurde", "newer.body": "Er wurde mit einer neueren Version erstellt. Aktualisieren Sie ThreadMapper und scannen Sie ihn erneut.", "newer.title": "Dieser Code braucht ein neueres ThreadMapper", "notAccepted": "Bei der Übergabe nicht abgenommen", "offline": {"one": "%lld offline", "other": "%lld offline"}, "rooms.title": "Raum für Raum", "routers": {"one": "%lld Router", "other": "%lld Router"}, "title": "Ihre letzte Prüfung", "uncheckable.body": "Dieser Browser kann die Signatur dieser Seite nicht prüfen. Betrachten Sie die Zahlen als Notiz, nicht als Beleg.", "uncheckable.title": "In diesem Browser nicht prüfbar", "unverified.body": "Diese Seite trägt keine gültige Signatur. Betrachten Sie die Zahlen als Notiz, nicht als Beleg.", "unverified.title": "Nicht verifiziert", "verified.key": "Schlüssel %@ — vergleichen Sie ihn mit der Karte, die Sie bekommen haben.", "verified.title": "Mit dem Schlüssel des Installateurs signiert", "weak": {"one": "%lld schwach", "other": "%lld schwach"}}, "en": {"accepted": "Accepted at hand-over", "cta": "Get the Full App", "devices": {"one": "%lld device", "other": "%lld devices"}, "fail.body": "The sticker may be damaged, or the link may have been shortened on the way. Ask whoever set the network up for a fresh one.", "fail.title": "This code could not be read", "footer": "Everything on this page came out of the link itself. Nothing was read from your network, and the page looks nothing up.", "inspected": "Inspected %@", "issues.title": "What was found", "newer.body": "It was made by a newer version. Update ThreadMapper and scan it again.", "newer.title": "This code needs a newer ThreadMapper", "notAccepted": "Not accepted at hand-over", "offline": {"one": "%lld offline", "other": "%lld offline"}, "rooms.title": "Room by room", "routers": {"one": "%lld router", "other": "%lld routers"}, "title": "Your Last Inspection", "uncheckable.body": "This browser cannot check the signature on this page. Treat the numbers as a note, not a record.", "uncheckable.title": "Not checked in this browser", "unverified.body": "This page carries no valid signature. Treat the numbers as a note, not a record.", "unverified.title": "Unverified", "verified.key": "Key %@ — compare it with the card you were given.", "verified.title": "Signed by the installer's key", "weak": {"one": "%lld weak", "other": "%lld weak"}}, "es": {"accepted": "Aceptado en la entrega", "cta": "Obtener la app completa", "devices": {"one": "%lld dispositivo", "other": "%lld dispositivos"}, "fail.body": "Puede que la pegatina esté dañada o que el enlace se haya acortado por el camino. Pide una nueva a quien configuró la red.", "fail.title": "No se pudo leer este código", "footer": "Todo lo que hay en esta página ha salido del propio enlace. No se ha leído nada de tu red y la página no consulta nada.", "inspected": "Inspección: %@", "issues.title": "Lo que se encontró", "newer.body": "Se creó con una versión más reciente. Actualiza ThreadMapper y vuelve a escanearlo.", "newer.title": "Este código necesita un ThreadMapper más reciente", "notAccepted": "No aceptado en la entrega", "offline": {"one": "%lld sin conexión", "other": "%lld sin conexión"}, "rooms.title": "Por habitación", "routers": {"one": "%lld router", "other": "%lld routers"}, "title": "Tu última inspección", "uncheckable.body": "Este navegador no puede comprobar la firma de esta página. Toma los números como una nota, no como un registro.", "uncheckable.title": "No se puede comprobar en este navegador", "unverified.body": "Esta página no lleva una firma válida. Toma los números como una nota, no como un registro.", "unverified.title": "Sin verificar", "verified.key": "Clave %@: compárala con la tarjeta que te han dado.", "verified.title": "Firmado con la clave del instalador", "weak": {"one": "%lld débil", "other": "%lld débiles"}}, "fr": {"accepted": "Accepté à la passation", "cta": "Obtenir l’app complète", "devices": {"many": "%lld appareils", "one": "%lld appareil", "other": "%lld appareils"}, "fail.body": "L'autocollant est peut-être abîmé, ou le lien a pu être raccourci en chemin. Demandez-en un nouveau à la personne qui a installé le réseau.", "fail.title": "Ce code n'a pas pu être lu", "footer": "Tout ce qui figure sur cette page provient du lien lui-même. Rien n’a été lu sur votre réseau, et la page ne va rien chercher ailleurs.", "inspected": "Inspecté le %@", "issues.title": "Ce qui a été trouvé", "newer.body": "Il a été créé avec une version plus récente. Mettez ThreadMapper à jour et scannez-le à nouveau.", "newer.title": "Ce code nécessite une version plus récente de ThreadMapper", "notAccepted": "Non accepté à la passation", "offline": {"one": "%lld hors ligne", "other": "%lld hors ligne"}, "rooms.title": "Pièce par pièce", "routers": {"one": "%lld routeur", "other": "%lld routeurs"}, "title": "Votre dernière inspection", "uncheckable.body": "Ce navigateur ne peut pas vérifier la signature de cette page. Considérez ces chiffres comme une simple indication, pas comme une preuve.", "uncheckable.title": "Vérification impossible dans ce navigateur", "unverified.body": "Cette page ne porte aucune signature valide. Considérez ces chiffres comme une simple indication, pas comme une preuve.", "unverified.title": "Non vérifié", "verified.key": "Clé %@ — comparez-la à la carte qui vous a été remise.", "verified.title": "Signé avec la clé de l’installateur", "weak": {"many": "%lld faibles", "one": "%lld faible", "other": "%lld faibles"}}, "it": {"accepted": "Accettato alla consegna", "cta": "Ottieni l’app completa", "devices": {"one": "%lld dispositivo", "other": "%lld dispositivi"}, "fail.body": "L'adesivo potrebbe essere danneggiato, o il link potrebbe essere stato accorciato lungo la strada. Chiedine uno nuovo a chi ha configurato la rete.", "fail.title": "Impossibile leggere questo codice", "footer": "Tutto ciò che vedi in questa pagina era già nel link. Nulla è stato letto dalla tua rete e la pagina non scarica nulla.", "inspected": "Ispezione: %@", "issues.title": "Cosa è stato trovato", "newer.body": "È stato creato con una versione più recente. Aggiorna ThreadMapper e scansionalo di nuovo.", "newer.title": "Questo codice richiede una versione più recente di ThreadMapper", "notAccepted": "Non accettato alla consegna", "offline": {"one": "%lld offline", "other": "%lld offline"}, "rooms.title": "Stanza per stanza", "routers": {"one": "%lld router", "other": "%lld router"}, "title": "La tua ultima ispezione", "uncheckable.body": "Questo browser non può controllare la firma di questa pagina. Considera i numeri un appunto, non un documento.", "uncheckable.title": "Controllo non eseguito in questo browser", "unverified.body": "Questa pagina non ha una firma valida. Considera i numeri un appunto, non un documento.", "unverified.title": "Non verificato", "verified.key": "Chiave %@ — confrontala con il biglietto che hai ricevuto.", "verified.title": "Firmato con la chiave dell’installatore", "weak": {"one": "%lld debole", "other": "%lld deboli"}}, "ja": {"accepted": "引き渡し時に承認済み", "cta": "完全版のAppを入手", "devices": {"other": "%lld台のデバイス"}, "fail.body": "シールが傷んでいるか、リンクが途中で短縮された可能性があります。ネットワークを設定した人に新しいものを頼んでください。", "fail.title": "このコードを読み取れませんでした", "footer": "このページの内容はすべて、開いたリンクそのものに含まれていたものです。お使いのネットワークからは何も読み取っておらず、ページが何かを取得しに行くこともありません。", "inspected": "点検日: %@", "issues.title": "見つかったこと", "newer.body": "新しいバージョンで作成されています。ThreadMapperを更新して、もう一度スキャンしてください。", "newer.title": "このコードには新しいバージョンのThreadMapperが必要です", "notAccepted": "引き渡し時に未承認", "offline": {"other": "%lld台オフライン"}, "rooms.title": "部屋ごと", "routers": {"other": "%lld台のルーター"}, "title": "最新の点検", "uncheckable.body": "このブラウザは、このページの署名を確認できません。数値は記録ではなくメモとして扱ってください。", "uncheckable.title": "このブラウザでは確認できません", "unverified.body": "このページには有効な署名がありません。数値は記録ではなくメモとして扱ってください。", "unverified.title": "未検証", "verified.key": "キー %@ — 受け取ったカードのものと照合してください。", "verified.title": "施工業者のキーで署名済み", "weak": "^[弱い %lld 台](inflect: true)"}, "nl": {"accepted": "Geaccepteerd bij oplevering", "cta": "Download de volledige app", "devices": {"one": "%lld apparaat", "other": "%lld apparaten"}, "fail.body": "De sticker kan beschadigd zijn, of de link is onderweg ingekort. Vraag degene die het netwerk heeft opgezet om een nieuwe.", "fail.title": "Deze code kon niet worden gelezen", "footer": "Alles op deze pagina komt uit de link zelf. Er is niets van je netwerk uitgelezen en de pagina zoekt niets op.", "inspected": "Inspectie van %@", "issues.title": "Wat er is gevonden", "newer.body": "Hij is gemaakt met een nieuwere versie. Werk ThreadMapper bij en scan hem opnieuw.", "newer.title": "Deze code vereist een nieuwere ThreadMapper", "notAccepted": "Niet geaccepteerd bij oplevering", "offline": {"one": "%lld offline", "other": "%lld offline"}, "rooms.title": "Per kamer", "routers": {"one": "%lld router", "other": "%lld routers"}, "title": "Je laatste inspectie", "uncheckable.body": "Deze browser kan de handtekening van deze pagina niet controleren. Beschouw de getallen als een notitie, niet als een registratie.", "uncheckable.title": "Niet gecontroleerd in deze browser", "unverified.body": "Deze pagina heeft geen geldige handtekening. Beschouw de getallen als een notitie, niet als een registratie.", "unverified.title": "Niet geverifieerd", "verified.key": "Sleutel %@ — vergelijk hem met het kaartje dat je hebt gekregen.", "verified.title": "Ondertekend met de sleutel van de installateur", "weak": "^[%lld zwak](inflect: true)"}, "pt-BR": {"accepted": "Aceito na entrega", "cta": "Baixar o app completo", "devices": {"many": "%lld dispositivos", "one": "%lld dispositivo", "other": "%lld dispositivos"}, "fail.body": "O adesivo pode estar danificado, ou o link pode ter sido encurtado no caminho. Peça um novo a quem configurou a rede.", "fail.title": "Não foi possível ler este código", "footer": "Tudo nesta página veio do próprio link. Nada foi lido da sua rede, e a página não consulta nada.", "inspected": "Inspecionado em %@", "issues.title": "O que foi encontrado", "newer.body": "Ele foi criado por uma versão mais recente. Atualize o ThreadMapper e escaneie de novo.", "newer.title": "Este código precisa de um ThreadMapper mais recente", "notAccepted": "Não aceito na entrega", "offline": {"one": "%lld offline", "other": "%lld offline"}, "rooms.title": "Cômodo a cômodo", "routers": {"one": "%lld roteador", "other": "%lld roteadores"}, "title": "Sua última inspeção", "uncheckable.body": "Este navegador não consegue conferir a assinatura desta página. Trate os números como uma anotação, não como um registro.", "uncheckable.title": "Não foi possível conferir neste navegador", "unverified.body": "Esta página não tem uma assinatura válida. Trate os números como uma anotação, não como um registro.", "unverified.title": "Não verificado", "verified.key": "Chave %@ — compare com o cartão que você recebeu.", "verified.title": "Assinado com a chave do instalador", "weak": {"one": "%lld fraco", "other": "%lld fracos"}}, "sv": {"accepted": "Accepterad vid överlämningen", "cta": "Hämta hela appen", "devices": {"one": "%lld enhet", "other": "%lld enheter"}, "fail.body": "Etiketten kan vara skadad, eller så har länken kortats på vägen. Be den som satte upp nätverket om en ny.", "fail.title": "Koden kunde inte läsas", "footer": "Allt på den här sidan fanns i själva länken. Ingenting har lästs från ditt nätverk, och sidan hämtar ingenting.", "inspected": "Inspekterat %@", "issues.title": "Vad som hittades", "newer.body": "Den skapades med en nyare version. Uppdatera ThreadMapper och skanna den igen.", "newer.title": "Koden kräver en nyare ThreadMapper", "notAccepted": "Inte accepterad vid överlämningen", "offline": {"one": "%lld offline", "other": "%lld offline"}, "rooms.title": "Rum för rum", "routers": {"one": "%lld router", "other": "%lld routrar"}, "title": "Din senaste inspektion", "uncheckable.body": "Den här webbläsaren kan inte kontrollera signaturen på sidan. Se siffrorna som en anteckning, inte som ett intyg.", "uncheckable.title": "Inte kontrollerad i den här webbläsaren", "unverified.body": "Den här sidan har ingen giltig signatur. Se siffrorna som en anteckning, inte som ett intyg.", "unverified.title": "Ej verifierad", "verified.key": "Nyckel %@ — jämför den med kortet du fick.", "verified.title": "Signerad med installatörens nyckel", "weak": {"one": "%lld svag", "other": "%lld svaga"}}};
+// The hand-off page, in the browser.
+//
+// A sticker on a hub carries `https://tintronix-lab.github.io/h?d=...`. On an
+// iPhone that URL opens the app (applinks) or the App Clip; everywhere else —
+// Android, a laptop, a Mac, a QR reader that just opens Safari — it lands
+// here, and this file is the whole reader. It decodes the same bytes
+// `HandoffCodec` wrote, with the same bounds, and says the same words in the
+// same nine languages. Nothing is fetched: the report is entirely in the URL.
+//
+// Kept honest by `tools/check_handoff_page.py`, which reads the Swift and this
+// file and fails when the two ends stop agreeing.
+
+'use strict'
+
+const Handoff = (() => {
+  // Mirrors of HandoffCodec's own bounds. The gate asserts these equal the
+  // Swift values — they are a defence against a stranger's URL, so drifting
+  // apart quietly is the failure that matters.
+  const URL_LIMIT = 2300
+  const INFLATE_LIMIT = 256 * 1024
+  const CURRENT_VERSION = 1
+
+  // HandoffPayload.CodingKeys. The gate reads the Swift enum and fails if a
+  // case is missing here, so a field added to the payload cannot silently go
+  // unread on the web.
+  const FIELDS = {
+    v: 'version', t: 'inspectedAt', f: 'firm', n: 'site', g: 'grade', s: 'score',
+    m: 'summary', d: 'deviceCount', o: 'offlineCount', w: 'weakCount',
+    r: 'routerCount', R: 'rooms', i: 'issues', a: 'accepted',
+  }
+  const ROOM_FIELDS = { name: 'name', deviceCount: 'deviceCount', offlineCount: 'offlineCount', weakCount: 'weakCount' }
+
+  // NetworkHealthScore.band(for:). Grade and colour both come from the score,
+  // not from the letter on the sticker, for the same reason the app does it:
+  // one definition.
+  const BANDS = [
+    { min: 90, grade: 'A', tone: 'a' },
+    { min: 75, grade: 'B', tone: 'b' },
+    { min: 60, grade: 'C', tone: 'c' },
+    { min: 40, grade: 'D', tone: 'd' },
+    { min: -Infinity, grade: 'F', tone: 'f' },
+  ]
+
+  function band(score) {
+    return BANDS.find(b => score >= b.min)
+  }
+
+  function base64url(text) {
+    let s = String(text).replace(/-/g, '+').replace(/_/g, '/')
+    while (s.length % 4 !== 0) s += '='
+    let binary
+    try { binary = atob(s) } catch { return null }
+    const out = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) out[i] = binary.charCodeAt(i)
+    return out
+  }
+
+  // Raw DEFLATE. Apple's COMPRESSION_ZLIB emits RFC 1951 with no zlib header,
+  // which is exactly what 'deflate-raw' reads — 'deflate' would reject it.
+  async function inflate(bytes) {
+    const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('deflate-raw'))
+    const reader = stream.getReader()
+    const chunks = []
+    let total = 0
+    for (;;) {
+      const { done, value } = await reader.read()
+      if (done) break
+      total += value.length
+      // The limit is on the sum, not on one chunk: a small URL can describe a
+      // very large expansion, and only the total bounds that.
+      if (total > INFLATE_LIMIT) { await reader.cancel(); throw new Error('tooLarge') }
+      chunks.push(value)
+    }
+    const out = new Uint8Array(total)
+    let at = 0
+    for (const c of chunks) { out.set(c, at); at += c.length }
+    return out
+  }
+
+  function hex(buffer) {
+    return [...new Uint8Array(buffer)].map(b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+  }
+
+  /// The first eight hex digits of SHA-256 over the raw public key, in two
+  /// groups — the same string the app prints, so it matches the installer's card.
+  async function fingerprint(keyBytes) {
+    const digest = await crypto.subtle.digest('SHA-256', keyBytes)
+    const h = hex(digest).slice(0, 8)
+    return h.slice(0, 4) + ' ' + h.slice(4)
+  }
+
+  /// 'verified' | 'unverified' | 'uncheckable'. The third is not a verdict and
+  /// must never be shown as one: a browser without Ed25519 has not found the
+  /// signature wanting, it has declined to look.
+  async function verify(data, k, s) {
+    if (!k || !s) return { state: 'unverified' }
+    const keyBytes = base64url(k)
+    const sigBytes = base64url(s)
+    if (!keyBytes || !sigBytes || keyBytes.length !== 32) return { state: 'unverified' }
+    let key
+    try {
+      key = await crypto.subtle.importKey('raw', keyBytes, { name: 'Ed25519' }, false, ['verify'])
+    } catch {
+      return { state: 'uncheckable' }
+    }
+    let ok = false
+    try {
+      ok = await crypto.subtle.verify({ name: 'Ed25519' }, key, sigBytes, data)
+    } catch {
+      return { state: 'uncheckable' }
+    }
+    if (!ok) return { state: 'unverified' }
+    return { state: 'verified', fingerprint: await fingerprint(keyBytes) }
+  }
+
+  /// The three parameters, from the query or the fragment. The app writes a
+  /// query today; a fragment never reaches the server at all, and a link that
+  /// used one would still have to open here, so both are read.
+  function params(href) {
+    const url = new URL(href)
+    const from = url.searchParams
+    if (from.get('d')) return from
+    const hash = url.hash.startsWith('#') ? url.hash.slice(1) : url.hash
+    return new URLSearchParams(hash)
+  }
+
+  /// Mirrors HandoffCodec.outcome(of:): 'empty' for a link carrying nothing,
+  /// 'failed' for one that is ours and unreadable, 'newer' for one a later
+  /// version wrote, 'ok' for a report. Never a fabricated home — showing
+  /// invented devices to someone whose whole assumption is "this is my house"
+  /// is a worse answer than an error.
+  async function read(href) {
+    const q = params(href)
+    const d = q.get('d')
+    if (!d) return { outcome: 'empty' }
+    const data = base64url(d)
+    if (!data) return { outcome: 'failed' }
+    // Bounded before anything reads it, and before the signature is checked —
+    // decoding has to happen first to have something to verify, so the
+    // signature is no defence here at all.
+    if (data.length > URL_LIMIT) return { outcome: 'failed' }
+    let json
+    try {
+      json = JSON.parse(new TextDecoder().decode(await inflate(data)))
+    } catch {
+      return { outcome: 'failed' }
+    }
+    if (json === null || typeof json !== 'object' || Array.isArray(json)) return { outcome: 'failed' }
+    const payload = {}
+    for (const [short, name] of Object.entries(FIELDS)) payload[name] = json[short]
+    if (typeof payload.version !== 'number') return { outcome: 'failed' }
+    if (payload.version > CURRENT_VERSION) return { outcome: 'newer' }
+    if (typeof payload.score !== 'number' || typeof payload.inspectedAt !== 'number') return { outcome: 'failed' }
+    payload.rooms = Array.isArray(payload.rooms) ? payload.rooms.map(room => {
+      const out = {}
+      for (const [key, name] of Object.entries(ROOM_FIELDS)) out[name] = room && room[key]
+      return out
+    }) : []
+    payload.issues = Array.isArray(payload.issues) ? payload.issues.filter(i => typeof i === 'string') : []
+    return { outcome: 'ok', payload, verification: await verify(data, q.get('k'), q.get('s')) }
+  }
+
+  /// The best of the reader's languages that the page actually speaks.
+  /// `navigator.languages` is ordered by preference, and a regional tag
+  /// ("de-AT", "pt-PT") belongs with its base language rather than with
+  /// English — which is the whole difference between a customer reading their
+  /// report and a customer reading someone else's language.
+  function pickLanguage(preferred, langs) {
+    const have = new Set(langs)
+    for (const tag of preferred) {
+      if (have.has(tag)) return tag
+      const base = String(tag).split('-')[0]
+      const match = langs.find(l => l === base || l.split('-')[0] === base)
+      if (match) return match
+    }
+    return 'en'
+  }
+
+  return { read, band, pickLanguage, base64url, fingerprint, URL_LIMIT, INFLATE_LIMIT, CURRENT_VERSION, FIELDS, BANDS }
+})()
+
+if (typeof module !== 'undefined' && module.exports) module.exports = Handoff
+
+// Drawing the hand-off report. `handoff.js` turns the URL into values; this
+// turns values into a page, in the reader's language rather than the
+// installer's — the one thing the web version can do that the Clip cannot,
+// because the Clip is frozen in the language of the phone that made it.
+//
+// Everything the stranger's URL carries — the site name, the firm, the
+// summary, the issues, the room names — reaches the document through
+// `textContent` and never through `innerHTML`. That is not defence in depth,
+// it is the only defence: the payload is bytes printed on a sticker by
+// someone this page has never met.
+
+'use strict'
+
+;(() => {
+  // STRINGS, SITE_PATHS, APP_STORE and LANGS are written in by
+  // tools/build_handoff_page.py from the app catalog and the site catalog.
+  const FALLBACK = 'en'
+
+  const lang = Handoff.pickLanguage(
+    navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || FALLBACK],
+    LANGS)
+  const table = STRINGS[lang] || STRINGS[FALLBACK]
+  const plurals = new Intl.PluralRules(lang)
+  const numbers = new Intl.NumberFormat(lang)
+
+  function t(id, value) {
+    const entry = table[id] !== undefined ? table[id] : STRINGS[FALLBACK][id]
+    if (typeof entry === 'string') return value === undefined ? entry : entry.replace('%@', value)
+    // A plural entry: CLDR categories, same as the catalog's own variations.
+    const form = entry[plurals.select(value)] || entry.other
+    return form.replace('%lld', numbers.format(value))
+  }
+
+  const el = (tag, className, text) => {
+    const node = document.createElement(tag)
+    if (className) node.className = className
+    if (text !== undefined && text !== null && text !== '') node.textContent = text
+    return node
+  }
+
+  function card(className, children) {
+    const box = el('section', className)
+    for (const child of children) if (child) box.appendChild(child)
+    return box
+  }
+
+  // ── States ────────────────────────────────────────────────────────────────
+
+  /// A link with nothing in it and a link we cannot read get the same words,
+  /// and they are the right words for both: the commonest cause of each is a
+  /// messaging app that shortened the URL on the way.
+  function notice(title, body) {
+    return card('notice', [
+      viewfinder(),
+      el('h1', 'notice-title', title),
+      el('p', 'notice-body', body),
+      callToAction(),
+    ])
+  }
+
+  /// The Clip marks this state with `qrcode.viewfinder`; this is the same
+  /// idea drawn by hand, because the page carries no icon font and fetches
+  /// nothing.
+  function viewfinder() {
+    const NS = 'http://www.w3.org/2000/svg'
+    const svg = document.createElementNS(NS, 'svg')
+    svg.setAttribute('viewBox', '0 0 24 24')
+    svg.setAttribute('class', 'notice-mark')
+    svg.setAttribute('aria-hidden', 'true')
+    const line = d => {
+      const path = document.createElementNS(NS, 'path')
+      path.setAttribute('d', d)
+      path.setAttribute('fill', 'none')
+      path.setAttribute('stroke', 'currentColor')
+      path.setAttribute('stroke-width', '1.8')
+      path.setAttribute('stroke-linecap', 'round')
+      path.setAttribute('stroke-linejoin', 'round')
+      return path
+    }
+    // Four corner brackets and a broken centre — a code that did not read.
+    svg.appendChild(line('M3 8V4.8A1.8 1.8 0 0 1 4.8 3H8'))
+    svg.appendChild(line('M16 3h3.2A1.8 1.8 0 0 1 21 4.8V8'))
+    svg.appendChild(line('M21 16v3.2a1.8 1.8 0 0 1-1.8 1.8H16'))
+    svg.appendChild(line('M8 21H4.8A1.8 1.8 0 0 1 3 19.2V16'))
+    svg.appendChild(line('M8.5 12h3M15.5 12h0'))
+    return svg
+  }
+
+  function verification(state) {
+    if (state.state === 'verified') {
+      return card('check check-ok', [
+        el('span', 'check-mark', '✓'),
+        card('check-text', [
+          el('strong', null, t('verified.title')),
+          el('span', 'check-detail', t('verified.key', state.fingerprint)),
+        ]),
+      ])
+    }
+    const uncheckable = state.state === 'uncheckable'
+    return card('check check-warn', [
+      el('span', 'check-mark', uncheckable ? '?' : '!'),
+      card('check-text', [
+        el('strong', null, t(uncheckable ? 'uncheckable.title' : 'unverified.title')),
+        el('span', 'check-detail', t(uncheckable ? 'uncheckable.body' : 'unverified.body')),
+      ]),
+    ])
+  }
+
+  function grade(payload) {
+    const band = Handoff.band(payload.score)
+    const when = new Date(payload.inspectedAt * 1000)
+    const stamp = new Intl.DateTimeFormat(lang, { dateStyle: 'long', timeStyle: 'short' }).format(when)
+    const box = card('grade grade-' + band.tone, [
+      typeof payload.site === 'string' ? el('h1', 'grade-site', payload.site) : null,
+      el('div', 'grade-letter', band.grade),
+      el('div', 'grade-score', numbers.format(payload.score) + ' / 100'),
+      typeof payload.summary === 'string' ? el('p', 'grade-summary', payload.summary) : null,
+      el('p', 'grade-when', t('inspected', stamp)),
+      typeof payload.firm === 'string' ? el('p', 'grade-firm', payload.firm) : null,
+    ])
+    if (typeof payload.accepted === 'boolean') {
+      box.appendChild(el('p', 'grade-accept ' + (payload.accepted ? 'is-yes' : 'is-no'),
+        t(payload.accepted ? 'accepted' : 'notAccepted')))
+    }
+    return box
+  }
+
+  function counts(payload) {
+    const row = el('div', 'tiles')
+    const tile = (label, tone) => {
+      const box = el('div', 'tile' + (tone ? ' tile-' + tone : ''))
+      box.appendChild(el('span', 'tile-value', label))
+      return box
+    }
+    row.appendChild(tile(t('devices', payload.deviceCount | 0)))
+    row.appendChild(tile(t('routers', payload.routerCount | 0)))
+    if ((payload.offlineCount | 0) > 0) row.appendChild(tile(t('offline', payload.offlineCount | 0), 'bad'))
+    return row
+  }
+
+  function issues(list) {
+    const box = card('panel', [el('h2', null, t('issues.title'))])
+    const ul = el('ul', 'issues')
+    for (const issue of list) {
+      const li = el('li', null, issue)
+      ul.appendChild(li)
+    }
+    box.appendChild(ul)
+    return box
+  }
+
+  function rooms(list) {
+    const box = card('panel', [el('h2', null, t('rooms.title'))])
+    const table = el('ul', 'rooms')
+    for (const room of list) {
+      const li = el('li')
+      li.appendChild(el('span', 'room-name', typeof room.name === 'string' ? room.name : ''))
+      const tail = el('span', 'room-counts')
+      tail.appendChild(el('span', 'room-devices', t('devices', room.deviceCount | 0)))
+      if ((room.offlineCount | 0) > 0) tail.appendChild(el('span', 'room-bad', t('offline', room.offlineCount | 0)))
+      else if ((room.weakCount | 0) > 0) tail.appendChild(el('span', 'room-warn', t('weak', room.weakCount | 0)))
+      li.appendChild(tail)
+      table.appendChild(li)
+    }
+    box.appendChild(table)
+    return box
+  }
+
+  function callToAction() {
+    const a = el('a', 'cta', t('cta'))
+    a.href = APP_STORE
+    a.rel = 'noreferrer noopener'
+    return a
+  }
+
+  function masthead() {
+    const a = el('a', 'brand', 'ThreadMapper')
+    const seg = SITE_PATHS[lang]
+    a.href = 'https://tintronix-lab.github.io/ThreadMapper/' + (seg ? seg + '/' : '')
+    a.rel = 'noreferrer noopener'
+    return a
+  }
+
+  function report(result) {
+    const frag = document.createDocumentFragment()
+    frag.appendChild(verification(result.verification))
+    frag.appendChild(grade(result.payload))
+    frag.appendChild(counts(result.payload))
+    if (result.payload.issues.length) frag.appendChild(issues(result.payload.issues))
+    if (result.payload.rooms.length) frag.appendChild(rooms(result.payload.rooms))
+    frag.appendChild(callToAction())
+    frag.appendChild(el('p', 'footer', t('footer')))
+    return frag
+  }
+
+  /// GitHub Pages serves a directory, so `/h?d=…` arrives here as a 301 to
+  /// `/h/?d=…` and the address bar keeps the slash. A reader who copies that
+  /// and sends it to someone who owns the app sends a link the app refuses:
+  /// `HandoffCodec` matches `path == "/h"` exactly, and so does the
+  /// association file. Putting the canonical path back costs one call and
+  /// removes a dead end nobody would ever diagnose.
+  function canonicalise() {
+    if (location.pathname !== '/h/') return
+    try {
+      history.replaceState(null, '', '/h' + location.search + location.hash)
+    } catch {
+      // A file:// or sandboxed origin refuses; the page itself is unaffected.
+    }
+  }
+
+  async function main() {
+    document.documentElement.lang = lang
+    document.title = t('title')
+    canonicalise()
+    const root = document.getElementById('h')
+    root.textContent = ''
+    root.appendChild(masthead())
+
+    let result
+    try {
+      result = await Handoff.read(location.href)
+    } catch {
+      result = { outcome: 'failed' }
+    }
+    if (result.outcome === 'ok') {
+      root.appendChild(report(result))
+    } else if (result.outcome === 'newer') {
+      root.appendChild(notice(t('newer.title'), t('newer.body')))
+    } else {
+      root.appendChild(notice(t('fail.title'), t('fail.body')))
+    }
+    document.body.dataset.state = result.outcome
+  }
+
+  main()
+})()
+
+</script>
+</body>
+</html>
