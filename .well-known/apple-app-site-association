@@ -2,12 +2,18 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["QCSX955Y7P.com.tintronixlab.ThreadMapper"],
+        "appIDs": [
+          "QCSX955Y7P.com.tintronixlab.ThreadMapper"
+        ],
         "components": [
           {
             "/": "/ThreadMapper/*",
             "exclude": true,
             "comment": "The documentation site is served from this same host under /ThreadMapper/. Those links must open a web page, so they are excluded before the root is claimed below."
+          },
+          {
+            "/": "/h",
+            "comment": "The hand-off sticker (HandoffCodec.path). A component's pattern is matched against the path, and \"/\" matches the root and nothing else — so before this row existed, a universal link to /h?d=... was claimed by no component at all and the installed app could never take it. Route.handoff's only entry point was unreachable for exactly the people who already own the app."
           },
           {
             "/": "/",
@@ -18,6 +24,8 @@
     ]
   },
   "appclips": {
-    "apps": ["QCSX955Y7P.com.tintronixlab.ThreadMapper.Clip"]
+    "apps": [
+      "QCSX955Y7P.com.tintronixlab.ThreadMapper.Clip"
+    ]
   }
 }
