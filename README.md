@@ -10,10 +10,14 @@ Edit them there — `site/well-known/apple-app-site-association` and
 `site/root/h/index.html`, the latter built by `tools/build_handoff_page.py`
 from `site/handoff/` — or the next build will quietly undo the change.
 
+A third root-only file, `app-ads.txt`, belongs to Pixel Home and is edited here
+directly.
+
 | path | what it is |
 |---|---|
 | `.well-known/apple-app-site-association` | the association file, below |
 | `h/index.html` | the page a hand-off sticker opens on anything that is not an iPhone |
+| `app-ads.txt` | the ad sellers Pixel Home authorizes, below |
 
 ## `/h` — the sticker's fallback
 
@@ -68,3 +72,16 @@ stops being launchable, again with no error anywhere.
 
 Kept in sync with `site/well-known/` in the private ThreadMapperCode repo,
 whose README carries the full background.
+
+## `app-ads.txt` — Pixel Home's ad sellers
+
+Not part of ThreadMapper and not generated anywhere. Pixel Home shows rewarded
+ads through Google AdMob, and ad buyers check this file to see that AdMob
+(publisher `pub-9872469255133368`) may sell them. Crawlers take the domain from
+the website on the app's App Store page
+(`https://tintronix-lab.github.io/Pixelhome/`) and read only
+
+    https://tintronix-lab.github.io/app-ads.txt
+
+so, like the association file, the project site cannot serve it. One line per
+authorized seller; add a line here when an ad partner is added.
