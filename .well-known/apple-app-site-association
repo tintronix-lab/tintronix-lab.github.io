@@ -20,6 +20,20 @@
             "comment": "The App Clip invocation URL. Once the full app is installed, iOS opens it here instead of launching the Clip again."
           }
         ]
+      },
+      {
+        "appIDs": [
+          "QCSX955Y7P.com.tintronix.pixelflow"
+        ],
+        "components": [
+          {
+            "/": "/Pixelhome/play/*",
+            "?": {
+              "daily": "*"
+            },
+            "comment": "Pixel Home, another app of the same team, which serves its web edition at /Pixelhome/play/. A shared Daily Flow result (…/Pixelhome/play/?daily=2026-10-24) opens in Pixel Home when it is installed; every other Pixelhome page stays a web page. None of ThreadMapper's paths are claimed here."
+          }
+        ]
       }
     ]
   },

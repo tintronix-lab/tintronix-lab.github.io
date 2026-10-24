@@ -64,6 +64,17 @@ error, no prompt, nothing to debug.
   that empty file this repo publishes and the association file does not.
 - **No file extension**, and it must be served as `application/json`.
 
+## Pixel Home's links
+
+The file also has an `applinks` detail for Pixel Home
+(`QCSX955Y7P.com.tintronix.pixelflow`, the `tintronix-lab/PixelFlow` repo),
+claiming only a shared Daily Flow result, `/Pixelhome/play/*` with a `daily`
+query item. With the game installed such a link opens it on that day's
+puzzle; without it, the web edition at `/Pixelhome/play/` plays it. It sits
+after ThreadMapper's detail and claims none of its paths. The source copy in
+ThreadMapperCode carries it too (ThreadMapperCode#399), so a sync from there
+keeps it.
+
 ## If the app's identifiers change
 
 The file names `QCSX955Y7P.com.tintronixlab.ThreadMapper.Clip` — the team ID
