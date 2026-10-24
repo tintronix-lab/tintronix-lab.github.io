@@ -72,7 +72,7 @@ claiming only a shared Daily Flow result, `/Pixelhome/play/*` with a `daily`
 query item. With the game installed such a link opens it on that day's
 puzzle; without it, the web edition at `/Pixelhome/play/` plays it. It sits
 after ThreadMapper's detail and claims none of its paths. The source copy in
-ThreadMapperCode carries it too (ThreadMapperCode#399), so a sync from there
+ThreadMapperCode carries it too (ThreadMapperCode#401), so a sync from there
 keeps it.
 
 ## If the app's identifiers change
