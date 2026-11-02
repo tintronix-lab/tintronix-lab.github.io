@@ -32,6 +32,21 @@
               "daily": "*"
             },
             "comment": "Pixel Home, another app of the same team, which serves its web edition at /Pixelhome/play/. A shared Daily Flow result (…/Pixelhome/play/?daily=2026-10-24) opens in Pixel Home when it is installed; every other Pixelhome page stays a web page. None of ThreadMapper's paths are claimed here."
+          },
+          {
+            "/": "/Pixelhome/play/*",
+            "#": "garden=*",
+            "comment": "A shared Workshop garden, or a duel on one (#garden=…&duel=…)."
+          },
+          {
+            "/": "/Pixelhome/play/*",
+            "#": "duel=*",
+            "comment": "A friendly duel on a Weekly or Wander puzzle."
+          },
+          {
+            "/": "/Pixelhome/play/*",
+            "#": "visit=*",
+            "comment": "A shared My Garden to visit."
           }
         ]
       }
